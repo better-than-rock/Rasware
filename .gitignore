@@ -1,4 +1,5 @@
 StellarisWare/
+.vscode/
 *.bak
 *.a
 *.o
