@@ -1,5 +1,5 @@
 # Makefile for RASWare 2013
-TARGET = Robotathon17.out
+TARGET = RASTemplate.out
 
 # Library Locations
 RASLIB = ../RASLib
