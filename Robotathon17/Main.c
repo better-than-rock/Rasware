@@ -20,9 +20,9 @@ void blink(void) {
 int main(void) {
     tMotor *left = InitializeServoMotor(PIN_B0, true);
     tMotor *right = InitializeServoMotor(PIN_B7, false);
-    tADC *disLeft = InitializeADC(PIN_B5);
+    tADC *disLeft = InitializeADC(PIN_E2);
     float leftInput;
-    tADC *disRight = InitializeADC(PIN_B2);
+    tADC *disRight = InitializeADC(PIN_E3);
     float rightInput;
     //These are arbitrary values to be tested and changed. 
     float maxDist = 50;
