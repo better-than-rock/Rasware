@@ -1,15 +1,14 @@
 #include <RASLib/inc/common.h> 
 #include <RASLib/inc/gpio.h> 
 #include <RASLib/inc/time.h> 
-#include "Switch.h"
+#include <RASLib/inc/adc.h>
 #include <RASLib/inc/sonar.h> 
+#include <RASLib/inc/motor.h>
+#include "Switch.h"
 
 // Blink the LED to show we're on
 tBoolean blink_on = true;
-tMotor *left = InitializeServoMotor(PIN_B0, true);
-tMotor *right = InitializeServoMotor(PIN_B7, false);
-tSonar *DisLeft = InitializeSonar(<PIN>, <PIN>);
-tSonar *DisRight = InitializeSonar(<PIN>, <PIN>);
+
 
 void blink(void) {
     SetPin(PIN_F3, blink_on);
@@ -19,13 +18,18 @@ void blink(void) {
 
 // The 'main' function is the entry point of the program
 int main(void) {
-
+    tMotor *left = InitializeServoMotor(PIN_B0, true);
+    tMotor *right = InitializeServoMotor(PIN_B7, false);
+    tADC *disLeft = InitializeADC(PIN_B5);
+    float leftInput;
+    tADC *disRight = InitializeADC(PIN_B2);
+    float rightInput;
     //These are arbitrary values to be tested and changed. 
     float maxDist = 50;
     float minDist = 10;
-    float kP = 3.14;
-    float errorL = ADCRead(DisLeft) - maxDist;
-    float errorR = ADCRead(DisRight) - maxDist;
+    float kP = -0.01;
+    float errorL = ADCRead(disLeft) - maxDist;
+    float errorR = ADCRead(disRight) - maxDist;
 
     // Initialization code can go here
     CallEvery(blink, 0, 0.5);
@@ -34,12 +38,13 @@ int main(void) {
         Printf("Hello World!\n");
         //SetMotor(left, 1.0);
         //SetMotor(right, 1.0);
-        
+        rightInput = ADCRead(disRight);
+	leftInput  = ADCRead(disLeft);
 	//This is for testing, actual speeds should be calculated based on input from sensors.
-	if(ADCRead(DisRight > 100)) {
+	if((rightInput > 100)) {
 	    SetMotor(left, 1.0);
 	    SetMotor(right, 0.5);
-	} else if(ADCRead(DisLeft > 100)) { 
+	} else if((leftInput > 100)) { 
 	    SetMotor(right, 1.0);
 	    SetMotor(left, 0.5);
 	}
