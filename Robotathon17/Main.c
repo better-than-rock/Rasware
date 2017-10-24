@@ -34,6 +34,8 @@ int main(void) {
     Printf("Hello World!\n");
     // Initialization code can go here
     CallEvery(blink, 0, 0.5);
+    // Runtime code can go here
+    Printf("Hello World!\n");
     while (1) {
         // Runtime code can go here
         
@@ -51,6 +53,19 @@ int main(void) {
 	    SetMotor(right, 1.0);
 	    SetMotor(left, 0.5);
 	}
+
+        //SetMotor(left, 1.0);
+        //SetMotor(right, 1.0);
+        rightInput = ADCRead(disRight);
+        leftInput  = ADCRead(disLeft);
+        //This is for testing, actual speeds should be calculated based on input from sensors.
+        if((rightInput > 100)) {
+            SetMotor(left, 1.0);
+            SetMotor(right, 0.5);
+        } else if((leftInput > 100)) { 
+            SetMotor(right, 1.0);
+            SetMotor(left, 0.5);
+        }
     }
 }
 
