@@ -30,6 +30,7 @@ int main(void) {
     float kP = -0.01;
     float errorL = ADCRead(disLeft) - maxDist;
     float errorR = ADCRead(disRight) - maxDist;
+    bool lastTriggered = false;
 
     Printf("Hello World!\n");
     // Initialization code can go here
@@ -37,32 +38,23 @@ int main(void) {
     // Runtime code can go here
     Printf("Hello World!\n");
     while (1) {
-        // Runtime code can go here
-        
-        //SetMotor(left, 1.0);
-        //SetMotor(right, 1.0);
-        rightInput = ADCRead(disRight);
-	leftInput  = ADCRead(disLeft);
-	Printf("Right: %f", rightInput);
-        Printf("Left: %f", leftInput);
-	//This is for testing, actual speeds should be calculated based on input from sensors.
-	if((rightInput > 100)) {
-	    SetMotor(left, 1.0);
-	    SetMotor(right, 0.5);
-	} else if((leftInput > 100)) { 
-	    SetMotor(right, 1.0);
-	    SetMotor(left, 0.5);
-	}
-
-        //SetMotor(left, 1.0);
-        //SetMotor(right, 1.0);
         rightInput = ADCRead(disRight);
         leftInput  = ADCRead(disLeft);
+        if(!lastTriggered && GetPin(PIN_A2)) {
+            lastTriggered = true;
+            Printf("Right: %f", rightInput);
+            Printf("Left: %f", leftInput);
+        } else if (lastTriggered) {
+            lastTriggered = false;
+        }
+        // Runtime code can go here
+        //SetMotor(left, 1.0);
+        //SetMotor(right, 1.0);
         //This is for testing, actual speeds should be calculated based on input from sensors.
-        if((rightInput > 100)) {
+        if((rightInput > .1)) {
             SetMotor(left, 1.0);
             SetMotor(right, 0.5);
-        } else if((leftInput > 100)) { 
+        } else if((leftInput > .1)) { 
             SetMotor(right, 1.0);
             SetMotor(left, 0.5);
         }
