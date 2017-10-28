@@ -25,13 +25,13 @@ void SetSpeed(tMotor* motor, float power) {
 // The 'main' function is the entry point of the program
 int main(void) {
     tMotor *left = InitializeServoMotor(PIN_B0, false);
-    tMotor *right = InitializeServoMotor(PIN_B7, true);
-    tADC *disLeft = InitializeADC(PIN_E3);
-    tADC *disRight = InitializeADC(PIN_E2);
-    float sweetSpot = 0.6;
+    tMotor *right = InitializeServoMotor(PIN_B3, true);
+    tADC *disLeft = InitializeADC(PIN_E5);
+    tADC *disFront = InitializeADC(PIN_B4);
+    // tADC *disRight = InitializeADC(PIN_E2);
+    // Sweet spot is the desired distance from the wall to keep
+    float sweetSpot = 0.3;
     float avgTriDelta = ADCRead(disLeft);
-    float tempTriDelt = 0.0;
-    int countTriDeltAvg = 0;
     //These are arbitrary values to be tested and changed. 
     // float maxDist = 50;
     // float minDist = 10;
@@ -40,68 +40,60 @@ int main(void) {
     // float errorR = ADCRead(disRight) - maxDist;
     // tBoolean lastPressed = false;
 
-    Printf("Hello World!\n");
     // Initialization code can go here
     CallEvery(blink, 0, 0.5);
     // Runtime code can go here
     Printf("Hello World!\n");
+    int printCount = 0;
+    // These two bools are used to finish a turn
+    tBoolean insideTurn = false;
+    tBoolean findWall = false;
     while (1) {
         float travelDirection = 0.0; // -1 => left +1 => right
-        rightDistance = ADCRead(disRight);
-        leftDistance  = ADCRead(disLeft);)
-        if (avgTriDelta - leftDistance > .3) { // Drastic change in distance => we need to turn to keep up with wall
-            travelDirection = -avgTriDelta;
-        } else if (fabs(avgTriDelta - sweetSpot) > .2) { // Try to get in the .6 sweet spot
-            travelDirection = (avgTriDelta - sweetSpot) * 2;
+        // float rightDistance = ADCRead(disRight);
+        float leftDistance  = ADCRead(disLeft);
+        float frontDistance = ADCRead(disFront);
+        // Drastic change in distance => we need to turn to keep up with wall, set findWall
+        // Once we start turning, we need to match the sweetspot but still turn a large amount so we use findWall to ensure this
+        if (avgTriDelta - leftDistance > .3 || (findWall && fabs(leftDistance - sweetSpot) > .1)) {
+            travelDirection = -pow(avgTriDelta, .75); // By raising to a power < 1, we increase the value of a decimal
+            findWall = true;
+        } else if (fabs(avgTriDelta - sweetSpot) > .1) { // Try to get in the sweet spot
+            travelDirection = (avgTriDelta - sweetSpot) * 3;
+            findWall = false;
+        } else if (findWall) {
+            // Stop trying to find the wall when we don't need to anymore
+            findWall = false;
         }
-        if (countTriDeltAvg === 3) {
-            avgTriDelta = tempTriDelt / 3.0;
-            countTriDeltAvg = 0;
-            tempTriDelt = 0.0;
-        } else {
-            tempTriDelt += leftDistance;
-            countTriDeltAvg++;   
+        // Inside turn if the front sensor gets close or if we are in progress of inside turning
+        if (frontDistance > .3 || (insideTurn && frontDistance > .2)) {
+            insideTurn = true;
+            travelDirection = 1.0;
+        } else if (insideTurn) {
+            insideTurn = false;
         }
+        // Update avgTriDelta
+        avgTriDelta = avgTriDelta * 2.0 / 3.0 + leftDistance * 1.0 / 3.0;
+        // Move to the desired travel direction
         if (travelDirection > 0) {
             SetSpeed(left, 1.0);
             SetSpeed(right, pow(1 - travelDirection, 1.8));
+        } else {
+            SetSpeed(left, pow(1 + travelDirection, 1.8));
+            SetSpeed(right, 1.0);
         }
-        // if (!lastPressed && GetPin(PIN_F4) && testSpeed < 1.0) {
-        //     lastPressed = true;
-        //     testSpeed += .01;
-        //     Printf("Increasing Speed to %f\n", testSpeed);
-        // } else if (!lastPressed && GetPin(PIN_F0) & testSpeed > -1.0) {
-        //     lastPressed = true;
-        //     testSpeed -= .01;
-        //     Printf("Decreasing Speed to %f\n", testSpeed);
-        // } else if (lastPressed && !GetPin(PIN_F0) && !GetPin(PIN_F4)) {
-        //     lastPressed = false;
-        // }
-        // Normalize speeds to -0.38 to 0.38;
-        // 
-        // SetMotor(right, testSpeed);
-        // if(!lastTriggered && GetPin(PIN_A2)) {
-        //     lastTriggered = true;
-        //     Printf("Right: %f Left: %f\n", rightInput, leftInput);
-        // } else if (lastTriggered && !GetPin(PIN_A2)) {
-        //     lastTriggered = false;
-        // }
-        // .6 - right/leftInput (+ for move closer to wall, - for move further)
-        // To move closer to wall turn left, right motor more power, left motor less power
-        // To move further to wall turn right, left motor more power, right motor less power
-        // (.6 - input) * 3 = amount to change between motor
-        // negative amt = further, set right motor to 1-abs(.6-input)
-        // positive amt = closer, set left motor to 1-abs(.6-input)
-        // float error = .6 - leftInput;
-        // float power = pow(1.0 - fabs(error), 1.6);
-        // if (error < 0) {
-        //     Printf("Taking %f power from right motor, move further from wall\n", power);
-        //     SetSpeed(left, 1.0);
-        //     SetSpeed(right, power);
-        // } else {
-        //     Printf("Taking %f power from left motor, move closer to wall\n", power);
-        //     SetSpeed(right, 1.0);
-        //     SetSpeed(left, power);
+        if (printCount == 500) {
+            Printf("|Left Distance: %.3f|\t|Front Distance: %.3f|\t|", leftDistance, frontDistance);
+            Printf("Avg Tri Delt: %.3f|\t|Travel Direction: %.3f|\n", avgTriDelta, travelDirection);
+            printCount = 0;
+        } else {
+            printCount++;
+        }
+        // if (leftDistance < .1) {
+        //     SetSpeed(left, 0.0);
+        //     SetSpeed(right, 0.0);
+        //     Wait(1.0);
+        //     continue;
         // }
     }
 }
