@@ -11,7 +11,7 @@
 tBoolean blink_on = true;
 
 //Algorithm for following walls
-float wallFollowing(float avgTriDelta);
+float wallFollowing(float avg100Delta);
 
 // Makes a right turn
 void turnRight(float degreeOfTurn){
@@ -56,8 +56,8 @@ int main(void) {
 	float linevals[8];
     tLineSensorReadArray(line, linevals);
     
-	// Average Tri Delta is the average of the last 3 changes in distance
-    float avgTriDelta = ADCRead(disLeft);
+	// Average 100 Delta is the average of the last 100 changes in distance
+    float avg100Delta = ADCRead(disLeft);
 
 
 	// A psuedo-timer used to determine when to output readings for debugging
@@ -66,19 +66,37 @@ int main(void) {
 	// Flag for if a line has been seen
 	tBoolean lineSeen = false;	
 	
-	while(1){
-		//We don't detect a line, pray that we can see a wall
-		if(!lineSeen){
-			float[] results = wallFollowing(avgTriDelta);
+	while(true){
+		float[] lineResults = lineFollowing();
+		float[] wallResults = wallFollowing(avg100Delta);
 
-			//Updates necessary values
-			avgTriDelta = results[0];
-			printCount = results[1];
-		}	
+		//Updates necessary values
+		avg100Delta = results[0];
+		printCount = results[1];
+		
+		// 70% of travel direction comes from line following and 30% comes from wall following
+		float travelDirection = ((lineResults[1] * 70.0	) + (wallResults[3] * 30.0)) / 100.0;
+
+		// Make appropriate turn
+    	if (travelDirection > 0) {
+       		turnRight(travelDirection);
+    	} else {
+        	turnLeft(travelDirection);
+    	}
 	}
 }
 
-float[] wallFollowing(float avgTriDelta){
+// Return turnDirection and avg of reading from sensors
+float[] lineFollowing(void){
+	//read and store values from the array
+	
+	//check each value
+		//if it's < .50, there is a line
+		//if it's > .50, there is no line
+
+}
+
+float[] wallFollowing(float avg100Delta){
 	
 	// Sweet spot is the desired distance from the wall to keep
     float sweetSpot = 0.3;
@@ -97,14 +115,14 @@ float[] wallFollowing(float avgTriDelta){
 
     // Drastic change in distance => we need to turn to keep up with wall, set findWall
     // Once we start turning, we need to match the sweetspot but still turn a large amount so we use findWall to ensure this
-    if (avgTriDelta - leftDistance > .3 || (findWall && fabs(leftDistance - sweetSpot) > .1)) {
+    if (avg100Delta - leftDistance > .3 || (findWall && fabs(leftDistance - sweetSpot) > .1)) {
 		// By raising to a power < 1, we increase the value of a decimal
-        travelDirection = -pow(avgTriDelta, .75);
+        travelDirection = -pow(avg100Delta, .75);
         findWall = true;
 
 	// Try to get in the sweet spot
-    } else if (fabs(avgTriDelta - sweetSpot) > .1) { 
-        travelDirection = (avgTriDelta - sweetSpot) * 3;
+    } else if (fabs(avg100Delta - sweetSpot) > .1) { 
+        travelDirection = (avg100Delta - sweetSpot) * 3;
         findWall = false;
 
     } else if (findWall) {
@@ -122,20 +140,13 @@ float[] wallFollowing(float avgTriDelta){
         insideTurn = false;
     }
 
-    // Update avgTriDelta
-    avgTriDelta = avgTriDelta * 2.0 / 3.0 + leftDistance * 1.0 / 3.0;
-
-    // Make appropriate turn
-    if (travelDirection > 0) {
-       turnRight(travelDirection);
-    } else {
-        turnLeft(travelDirection);
-    }
+    // Update avg100Delta
+    avg100Delta = avg100Delta * 99.0 / 100.0 + leftDistance * 1.0 / 100.0;
 
 	//We have waited long enough, now we can check the sensors
     if (printCount == 500) {
         Printf("|Left Distance: %.3f|\t|Front Distance: %.3f|\t|", leftDistance, frontDistance);
-        Printf("Avg Tri Delt: %.3f|\t|Travel Direction: %.3f|\n", avgTriDelta, travelDirection);
+        Printf("Avg 100 Delt: %.3f|\t|Travel Direction: %.3f|\n", avg100Delta, travelDirection);
         printCount = 0;
 
 	//We haven't waited long enough
@@ -143,7 +154,7 @@ float[] wallFollowing(float avgTriDelta){
         printCount++;
     }
 
-	float[] results = {avgTriDelta, printCount};
+	float[] results = {avg100Delta, printCount, travelDirection};
 	return results;
 }
 
