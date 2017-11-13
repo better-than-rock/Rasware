@@ -234,11 +234,22 @@ Compile RASLib by using the [make](<https://en.wikipedia.org/wiki/Make_(software
   ```bash
     git add filename
   ```
+  
+  Optionally, to track all files, you can add all using a dot.
+  
+  ```bash
+    git add .
+  ```
 
 4. You can now use the commit command to create a commit containing all of the modifications of the files you `git add`ed. It will open an editor for writing a [commit message](https://github.com/erlang/otp/wiki/Writing-good-commit-messages). If saved, the commit will be created.
 
   ```bash
     git commit
+  ```
+  
+  Optionally, you can place your commit message inline by passing a message parameter.
+  ```bash
+    git commit -m "Commit message"
   ```
 
 5. To move your local changes to the server, use the push command.
