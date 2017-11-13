@@ -207,12 +207,13 @@ Compile RASLib by using the [make](<https://en.wikipedia.org/wiki/Make_(software
 
 5. You should now be presented with the RASDemo menu. Feel free to mess around and look into RASDemo's source code to see how it is done. To exit press `C-a d`, or control-A followed by a d. This will detach the launchpad's UART from your current console. To get back to the launchpad, in your console run `screen -r`.
 
-6. If you don't want to do all of the above steps each time, you can run everything with one command. However, please note openeing the console may give an error if the command was already run before and was detached. If this happens, try running `screen -r` in console.
+6. If you don't want to do all of the above steps each time, you can run everything with one command.
 
   ```bash
     make run
   ```
-
+  
+ However, please note openeing the console may give an error if the command was already run before and was detached. If this happens, try running `screen -r` in console.
 
 ### Committing code back to your repo ###
 1. Before you start, you should configure git with both your username and email.
