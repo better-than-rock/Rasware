@@ -177,7 +177,7 @@ int main(void) {
         float wallResults = wallFollowing(avg100Delta, disLeft, disRight, printCount);
         // 70% of travel direction comes from line following and 30% comes from wall following
         // float travelDirection = ((lineResults[1] * 70.0	) + (wallResults[3] * 30.0)) / 100.0;
-        float travelDirection = lineResults * .7 + wallResults * .3;
+        float travelDirection = wallResults;
 
         // Make appropriate turn
         if (travelDirection > 0) {
