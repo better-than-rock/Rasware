@@ -6,7 +6,6 @@
 #include <RASLib/inc/linesensor.h> 
 #include <RASLib/inc/motor.h>
 #include <math.h>
-#include "Switch.h"
 
 // Blink the LED to show we're on
 tBoolean blink_on = true;
@@ -130,7 +129,10 @@ float wallFollowing(float avgDelta[], tADC* left, tADC* right, int debug){
     // Drastic change in distance => we need to turn to keep up with wall, set findWall
     // Once we start turning, we need to match the sweetspot but still turn a large amount so we use findWall to ensure this
     if (fabs(avg100Delta - sweetSpot) > .1) { 
-        travelDirection = min((avg100Delta - sweetSpot) * 3.0, 1);
+        travelDirection = (avg100Delta - sweetSpot) * 3.0;
+        if (fabs(travelDirection) > 1) {
+            travelDirection = travelDirection > 0 ? 1 : -1;
+        } 
     }
     // Update avg100Delta
     avgDelta[0] = avg100Delta * 99.0 / 100.0 + leftDistance * 1.0 / 100.0;
