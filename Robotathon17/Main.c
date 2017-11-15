@@ -117,7 +117,7 @@ float wallFollowing(float avgDelta[], tADC* left, tADC* right, int debug){
     // Sweet spot is the desired distance from the wall to keep
     float sweetSpot = 0.3;
 
-    float avg100Delta = avgDelta[0];
+    float avg5Delta = avgDelta[0];
 
     // Negative values = turn left
     // Positive values = turn right
@@ -128,14 +128,14 @@ float wallFollowing(float avgDelta[], tADC* left, tADC* right, int debug){
 
     // Drastic change in distance => we need to turn to keep up with wall, set findWall
     // Once we start turning, we need to match the sweetspot but still turn a large amount so we use findWall to ensure this
-    if (fabs(avg100Delta - sweetSpot) > .1) { 
-        travelDirection = (avg100Delta - sweetSpot) * 3.0;
+    if (fabs(avg5Delta - sweetSpot) > .1) { 
+        travelDirection = (avg5Delta - sweetSpot) * 3.0;
         if (fabs(travelDirection) > 1) {
             travelDirection = travelDirection > 0 ? 1 : -1;
-        } 
+        }
     }
     // Update avg100Delta
-    avgDelta[0] = avg100Delta * 99.0 / 100.0 + leftDistance * 1.0 / 100.0;
+    avgDelta[0] = avg5Delta * 4.0/5.0 + leftDistance * 1.0 / 5.0;
 
     return travelDirection;
 
@@ -158,8 +158,8 @@ int main(void) {
     LineSensorReadArray(line, lv);
     
     // Average 100 Delta is the average of the last 100 changes in distance
-    float avg100Delta[1];
-    avg100Delta[0] = ADCRead(disLeft);
+    float avg5Delta[1];
+    avg5Delta[0] = ADCRead(disLeft);
     
     // A psuedo-timer used to determine when to output readings for debugging
     int printCount = 0;
@@ -176,7 +176,7 @@ int main(void) {
     
     while(true){
         float lineResults = lineFollowing(line, lv, printCount);
-        float wallResults = wallFollowing(avg100Delta, disLeft, disRight, printCount);
+        float wallResults = wallFollowing(avg5Delta, disLeft, disRight, printCount);
         // 70% of travel direction comes from line following and 30% comes from wall following
         // float travelDirection = ((lineResults[1] * 70.0	) + (wallResults[3] * 30.0)) / 100.0;
         float travelDirection = wallResults;
@@ -191,7 +191,7 @@ int main(void) {
         //We have waited long enough, now we can check the sensors
         if (printCount == 500) {
             // Printf("|Left Distance: %.3f|\t|Front Distance: %.3f|\t|", wallResults[2], wallResults[3]);
-            Printf("Avg 100 Delt: %.3f|Travel Direction: %.3f|\n", avg100Delta[0], travelDirection);
+            Printf("Avg 5 Delt: %.3f|Travel Direction: %.3f|\n", avg5Delta[0], travelDirection);
             Printf("LineSens: %.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\n",
                     lv[0], lv[1], lv[2], lv[3], lv[4], lv[5], lv[6], lv[7]);
             printCount = 0;
