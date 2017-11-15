@@ -122,17 +122,27 @@ float wallFollowing(float avgDelta[], tADC* left, tADC* right, int debug){
     // Negative values = turn left
     // Positive values = turn right
     float travelDirection = 0.0; 
+    tBoolean findWall = false;
 
     float leftDistance  = ADCRead(left);
     float rightDistance = ADCRead(right);
 
     // Drastic change in distance => we need to turn to keep up with wall, set findWall
     // Once we start turning, we need to match the sweetspot but still turn a large amount so we use findWall to ensure this
-    if (fabs(avg5Delta - sweetSpot) > .1) { 
+    if (avg100Delta - leftDistance > .3 || (findWall && fabs(leftDistance - sweetSpot) > .1)) {
+        // By raising to a power < 1, we increase the value of a decimal
+        travelDirection = -pow(avg100Delta, .75);
+        findWall = true;
+
+    // Try to get in the sweet spot
+    } else if (fabs(avg5Delta - sweetSpot) > .1) { 
         travelDirection = (avg5Delta - sweetSpot) * 3.0;
         if (fabs(travelDirection) > 1) {
             travelDirection = travelDirection > 0 ? 1 : -1;
         }
+    } else if (findWall) {
+        // Stop trying to find the wall when we don't need to anymore
+        findWall = false;
     }
     // Update avg100Delta
     avgDelta[0] = avg5Delta * 4.0/5.0 + leftDistance * 1.0 / 5.0;
@@ -178,7 +188,6 @@ int main(void) {
         float lineResults = lineFollowing(line, lv, printCount);
         float wallResults = wallFollowing(avg5Delta, disLeft, disRight, printCount);
         // 70% of travel direction comes from line following and 30% comes from wall following
-        // float travelDirection = ((lineResults[1] * 70.0	) + (wallResults[3] * 30.0)) / 100.0;
         float travelDirection = lineResults * .7 + wallResults * .3;
 
         // Make appropriate turn
