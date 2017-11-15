@@ -30,19 +30,19 @@ void SetSpeed(tMotor* motor, float power) {
 
 // Makes a right turn
 void turnRight(float degreeOfTurn, tMotor* left, tMotor* right){
-    // SetSpeed(left, 0.0);
-    // SetSpeed(right, 0.0);
-    SetSpeed(left, 1.0);
-    SetSpeed(right, pow(1 - degreeOfTurn, 1.8));
+    SetSpeed(left, 0.0);
+    SetSpeed(right, 0.0);
+    //SetSpeed(left, 1.0);
+    //SetSpeed(right, pow(1 - degreeOfTurn, 1.8));
 }
 
 
 // Makes a left turn
 void turnLeft(float degreeOfTurn, tMotor* left, tMotor* right){
-    // SetSpeed(left, 0.0);
-    // SetSpeed(right, 0.0);
-    SetSpeed(left, pow(1 + degreeOfTurn, 1.8));
-    SetSpeed(right, 1.0);
+    SetSpeed(left, 0.0);
+    SetSpeed(right, 0.0);
+    //SetSpeed(left, pow(1 + degreeOfTurn, 1.8));
+    //SetSpeed(right, 1.0);
 }
 
 
