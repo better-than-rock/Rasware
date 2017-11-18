@@ -58,6 +58,9 @@ float lineFollowing(tLineSensor* line, float lv[], int debug){
         }
         error += weights[i] * lv[i];
     }
+    if (error < .3) {
+        return -2;
+    }
     travelDirection = error / 7.0;
     return travelDirection;
 }
@@ -129,9 +132,9 @@ float wallFollowing(float avgDelta[], tADC* left, tADC* right, int debug){
 
     // Drastic change in distance => we need to turn to keep up with wall, set findWall
     // Once we start turning, we need to match the sweetspot but still turn a large amount so we use findWall to ensure this
-    if (avg100Delta - leftDistance > .3 || (findWall && fabs(leftDistance - sweetSpot) > .1)) {
+    if (avg5Delta - leftDistance > .3 || (findWall && fabs(leftDistance - sweetSpot) > .1)) {
         // By raising to a power < 1, we increase the value of a decimal
-        travelDirection = -pow(avg100Delta, .75);
+        travelDirection = -pow(avg5Delta, .75);
         findWall = true;
 
     // Try to get in the sweet spot
